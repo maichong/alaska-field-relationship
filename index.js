@@ -7,7 +7,7 @@
 'use strict';
 
 const mongoose = require('mongoose');
-//const alaska = require('alaska');
+const alaska = require('alaska');
 
 exports.views = {
   cell: {
@@ -30,6 +30,9 @@ exports.plain = Number;
  */
 exports.initSchema = function (field, schema, Model) {
   let type = mongoose.Schema.Types.ObjectId;
+  if (typeof field.ref == 'string' && field.ref.indexOf('.') > -1) {
+    field.ref = Model.service.model(field.ref);
+  }
   if (typeof field.ref == 'function' && field.ref.fields._id) {
     type = field.ref.fields._id.type.plain;
   }
@@ -49,4 +52,21 @@ exports.initSchema = function (field, schema, Model) {
   }
 
   schema.path(field.path, options);
+};
+
+/**
+ * alaska-admin-view 前端控件初始化参数
+ * @param field
+ * @param Model
+ */
+exports.viewOptions = function (field, Model) {
+  let options = alaska.Field.viewOptions.apply(this, arguments);
+  let ref = field.ref;
+  if (typeof ref == 'string') {
+    ref = Model.service.model(ref);
+  }
+  options.service = ref.service.id;
+  options.model = ref.name;
+  options.many = field.many;
+  return options;
 };

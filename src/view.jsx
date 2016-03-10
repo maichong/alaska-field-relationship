@@ -7,6 +7,8 @@
 import React from 'react';
 import getMuiTheme from 'material-ui/lib/styles/getMuiTheme';
 import ContextPure from 'material-ui/lib/mixins/context-pure';
+import Select2 from 'react-select2-wrapper';
+import 'react-select2-wrapper/css/select2.css';
 
 export default class RelationshipFieldView extends React.Component {
 
@@ -17,6 +19,8 @@ export default class RelationshipFieldView extends React.Component {
   static contextTypes = {
     muiTheme: React.PropTypes.object,
     views: React.PropTypes.object,
+    settings: React.PropTypes.object,
+    details: React.PropTypes.object,
   };
 
   static childContextTypes = {
@@ -30,10 +34,32 @@ export default class RelationshipFieldView extends React.Component {
 
   constructor(props, context) {
     super(props);
+    this._handleChange = this._handleChange.bind(this);
     this.state = {
       muiTheme: context.muiTheme ? context.muiTheme : getMuiTheme(),
-      views: context.views
+      views: context.views,
+      data: [{ text: 'hehe', id: 1 }]
     };
+
+    let me = this;
+
+    let prefix = context.settings.services['alaska-admin'].prefix;
+
+    this.state.options = {
+      ajax: {
+        url: prefix + '/select2',
+        cache: true,
+        data: function (params) {
+          let field = me.props.field;
+          return {
+            service: field.service,
+            model: field.model,
+            search: params.term,
+            page: params.page
+          };
+        }
+      }
+    }
   }
 
   getChildContext() {
@@ -41,12 +67,6 @@ export default class RelationshipFieldView extends React.Component {
       muiTheme: this.state.muiTheme,
       views: this.context.views,
     };
-  }
-
-  componentWillMount() {
-  }
-
-  componentDidMount() {
   }
 
   componentWillReceiveProps(nextProps, nextContext) {
@@ -60,17 +80,59 @@ export default class RelationshipFieldView extends React.Component {
     this.setState(newState);
   }
 
-  componentWillUnmount() {
+  _handleChange(event) {
+    if (this.refs.select) {
+      let value = this.refs.select.el.val();
+      if (!value && this.props.field.many) {
+        value = [];
+      }
+      this.props.onChange && this.props.onChange(value);
+    }
   }
 
   render() {
-    let props = this.props;
-    let state = this.state;
+    let { field, value, model } = this.props;
+    let { muiTheme, options } = this.state;
+    let noteElement = field.note ?
+      <div style={field.fullWidth?muiTheme.fieldNote:muiTheme.fieldNoteInline}>{field.note}</div> : null;
     let styles = {
-      root: {}
+      root: {
+        padding: '10px 0'
+      },
+      label: {
+        fontSize: '12px',
+        color: '#999',
+        paddingBottom: 8
+      },
+      select: {
+        width: '100%',
+        marginBottom: 5
+      }
     };
+    let data = [];
+    let key = model.key;
+    let details = this.context.details;
+    let titleField = model.title || 'title';
+    if (details[key]) {
+      for (let id in details[key]) {
+        data.push({
+          id,
+          text: details[key][titleField] || id
+        });
+      }
+    }
     return (
-      <div style={styles.root}>RelationshipFieldView Component</div>
+      <div style={styles.root}>
+        <div style={styles.label}>{field.label}</div>
+        <Select2
+          ref="select"
+          multiple={field.many}
+          value={value}
+          data={data}
+          style={styles.select}
+          options={options}
+          onChange={this._handleChange}
+        />{noteElement}</div>
     );
   }
 }
