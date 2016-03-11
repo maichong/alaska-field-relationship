@@ -14,6 +14,8 @@ import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { actions } from 'alaska-admin-view';
 
+import { shallowEqual } from 'alaska-admin-view';
+
 class RelationshipFieldView extends React.Component {
 
   static propTypes = {
@@ -23,8 +25,7 @@ class RelationshipFieldView extends React.Component {
   static contextTypes = {
     muiTheme: React.PropTypes.object,
     views: React.PropTypes.object,
-    settings: React.PropTypes.object,
-    details: React.PropTypes.object,
+    settings: React.PropTypes.object
   };
 
   static childContextTypes = {
@@ -42,8 +43,7 @@ class RelationshipFieldView extends React.Component {
     this.handleSearch = this.handleSearch.bind(this);
     this.state = {
       muiTheme: context.muiTheme ? context.muiTheme : getMuiTheme(),
-      views: context.views,
-      data: [{ text: 'hehe', id: 1 }]
+      views: context.views
     };
   }
 
@@ -73,6 +73,10 @@ class RelationshipFieldView extends React.Component {
         }
       }
     });
+  }
+
+  shouldComponentUpdate(props) {
+    return !shallowEqual(props, this.props, 'data', 'onChange', 'search');
   }
 
   handleChange(value) {
@@ -128,18 +132,6 @@ class RelationshipFieldView extends React.Component {
         marginBottom: 5
       }
     };
-    let data = [];
-    let key = model.key;
-    let details = this.context.details;
-    let titleField = model.title || 'title';
-    if (details[key]) {
-      for (let id in details[key]) {
-        data.push({
-          id,
-          text: details[key][titleField] || id
-        });
-      }
-    }
     return (
       <div style={styles.root}>
         <div style={styles.label}>{field.label}</div>

@@ -60,8 +60,9 @@ export default class RelationshipFieldCell extends React.Component {
     this.setState(newState);
   }
 
-  componentWillUnmount() {
-  }
+  //shouldComponentUpdate(props) {
+  //  return props.value != this.props.value;
+  //}
 
   render() {
     let props = this.props;
