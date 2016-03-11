@@ -47,7 +47,7 @@ exports.initSchema = function (field, schema, Model) {
     ref
   };
 
-  if (field.many) {
+  if (field.multi) {
     options = [options];
   }
 
@@ -67,6 +67,6 @@ exports.viewOptions = function (field, Model) {
   }
   options.service = ref.service.id;
   options.model = ref.name;
-  options.many = field.many;
+  options.multi = field.multi;
   return options;
 };

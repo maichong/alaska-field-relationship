@@ -7,10 +7,14 @@
 import React from 'react';
 import getMuiTheme from 'material-ui/lib/styles/getMuiTheme';
 import ContextPure from 'material-ui/lib/mixins/context-pure';
-import Select2 from 'react-select2-wrapper';
-import 'react-select2-wrapper/css/select2.css';
+import Select from 'react-select';
+import 'react-select/dist/react-select.min.css';
 
-export default class RelationshipFieldView extends React.Component {
+import { bindActionCreators } from 'redux';
+import { connect } from 'react-redux';
+import { actions } from 'alaska-admin-view';
+
+class RelationshipFieldView extends React.Component {
 
   static propTypes = {
     children: React.PropTypes.node
@@ -34,32 +38,13 @@ export default class RelationshipFieldView extends React.Component {
 
   constructor(props, context) {
     super(props);
-    this._handleChange = this._handleChange.bind(this);
+    this.handleChange = this.handleChange.bind(this);
+    this.handleSearch = this.handleSearch.bind(this);
     this.state = {
       muiTheme: context.muiTheme ? context.muiTheme : getMuiTheme(),
       views: context.views,
       data: [{ text: 'hehe', id: 1 }]
     };
-
-    let me = this;
-
-    let prefix = context.settings.services['alaska-admin'].prefix;
-
-    this.state.options = {
-      ajax: {
-        url: prefix + '/select2',
-        cache: true,
-        data: function (params) {
-          let field = me.props.field;
-          return {
-            service: field.service,
-            model: field.model,
-            search: params.term,
-            page: params.page
-          };
-        }
-      }
-    }
   }
 
   getChildContext() {
@@ -77,22 +62,56 @@ export default class RelationshipFieldView extends React.Component {
     if (nextContext.views) {
       newState.views = nextContext.views;
     }
-    this.setState(newState);
+    this.setState(newState, () => {
+      if (this._searchCallback && this.props.search) {
+        let search = this.props.search;
+        let field = this.props.field;
+        let key = field.service + '-' + field.model;
+        if (search[key] && search[key][this._searchKeyword]) {
+          this._searchCallback(null, { options: search[key][this._searchKeyword] });
+          this._searchCallback = null;
+        }
+      }
+    });
   }
 
-  _handleChange(event) {
-    if (this.refs.select) {
-      let value = this.refs.select.el.val();
-      if (!value && this.props.field.many) {
-        value = [];
+  handleChange(value) {
+    if (this.props.onChange) {
+      let val = '';
+      if (this.props.field.multi) {
+        val = [];
+        value && value.forEach(o => {
+          val.push(o._id)
+        });
+      } else if (value) {
+        val = value._id;
       }
-      this.props.onChange && this.props.onChange(value);
+      this.props.onChange(val);
     }
   }
 
+  _searchCallback = null;
+  _searchKeyword = '';
+
+  handleSearch(keyword, callback) {
+    let { search, actions, field } = this.props;
+    let key = field.service + '-' + field.model;
+    if (search[key] && search[key][keyword]) {
+      callback(null, { options: search[key][keyword] });
+      return;
+    }
+    actions.search({
+      service: field.service,
+      model: field.model,
+      keyword
+    });
+    this._searchCallback = callback;
+    this._searchKeyword = keyword;
+  }
+
   render() {
-    let { field, value, model } = this.props;
-    let { muiTheme, options } = this.state;
+    let { field, value, model, disabled } = this.props;
+    let { muiTheme } = this.state;
     let noteElement = field.note ?
       <div style={field.fullWidth?muiTheme.fieldNote:muiTheme.fieldNoteInline}>{field.note}</div> : null;
     let styles = {
@@ -124,15 +143,20 @@ export default class RelationshipFieldView extends React.Component {
     return (
       <div style={styles.root}>
         <div style={styles.label}>{field.label}</div>
-        <Select2
-          ref="select"
-          multiple={field.many}
+        <Select.Async
+          multi={field.multi}
           value={value}
-          data={data}
           style={styles.select}
-          options={options}
-          onChange={this._handleChange}
+          disabled={disabled}
+          valueKey="_id"
+          labelKey="title"
+          onChange={this.handleChange}
+          loadOptions={this.handleSearch}
         />{noteElement}</div>
     );
   }
 }
+
+export default connect(({ search }) => ({ search }), dispatch => ({
+  actions: bindActionCreators(actions, dispatch)
+}))(RelationshipFieldView);
