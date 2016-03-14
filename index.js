@@ -30,8 +30,12 @@ exports.plain = Number;
  */
 exports.initSchema = function (field, schema, Model) {
   let type = mongoose.Schema.Types.ObjectId;
-  if (typeof field.ref == 'string' && field.ref.indexOf('.') > -1) {
-    field.ref = Model.service.model(field.ref);
+  if (typeof field.ref == 'string') {
+    if (field.ref.indexOf('.') > -1) {
+      field.ref = Model.service.model(field.ref);
+    } else if (field.ref == Model.name) {
+      field.ref = Model;
+    }
   }
   if (typeof field.ref == 'function' && field.ref.fields._id) {
     type = field.ref.fields._id.type.plain;
