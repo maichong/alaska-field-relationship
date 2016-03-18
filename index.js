@@ -20,7 +20,7 @@ exports.views = {
   }
 };
 
-exports.plain = Number;
+exports.plain = mongoose.Schema.Types.ObjectId;
 
 /**
  * 初始化Schema

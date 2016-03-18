@@ -5,64 +5,38 @@
  */
 
 import React from 'react';
-import getMuiTheme from 'material-ui/lib/styles/getMuiTheme';
-import ContextPure from 'material-ui/lib/mixins/context-pure';
 
-export default class RelationshipFieldCell extends React.Component {
+import { bindActionCreators } from 'redux';
+import { connect } from 'react-redux';
+import { actions } from 'alaska-admin-view';
 
-  static propTypes = {
-    children: React.PropTypes.node
-  };
+class RelationshipFieldCell extends React.Component {
 
   static contextTypes = {
-    muiTheme: React.PropTypes.object,
-    views: React.PropTypes.object,
+    settings: React.PropTypes.object
   };
-
-  static childContextTypes = {
-    muiTheme: React.PropTypes.object,
-    views: React.PropTypes.object,
-  };
-
-  static mixins = [
-    ContextPure
-  ];
 
   constructor(props, context) {
     super(props);
     this.state = {
-      muiTheme: context.muiTheme ? context.muiTheme : getMuiTheme(),
-      views: context.views
+      settings: context.settings
     };
-  }
-
-  getChildContext() {
-    return {
-      muiTheme: this.state.muiTheme,
-      views: this.context.views,
-    };
-  }
-
-  componentWillMount() {
-  }
-
-  componentDidMount() {
   }
 
   componentWillReceiveProps(nextProps, nextContext) {
     let newState = {};
-    if (nextContext.muiTheme) {
-      newState.muiTheme = nextContext.muiTheme;
+    if (nextContext.settings) {
+      newState.settings = nextContext.settings;
     }
-    if (nextContext.views) {
-      newState.views = nextContext.views;
+    if (nextProps.details) {
+
     }
     this.setState(newState);
   }
 
-  //shouldComponentUpdate(props) {
-  //  return props.value != this.props.value;
-  //}
+  shouldComponentUpdate(props) {
+    return props.value != this.props.value || props.details != this.props.details;
+  }
 
   render() {
     let props = this.props;
@@ -71,7 +45,11 @@ export default class RelationshipFieldCell extends React.Component {
       root: {}
     };
     return (
-      <div style={styles.root}>RelationshipFieldCell Component</div>
+      <div style={styles.root}>TODO</div>
     );
   }
 }
+
+export default connect(({ details }) => ({ details }), dispatch => ({
+  actions: bindActionCreators(actions, dispatch)
+}))(RelationshipFieldCell);
