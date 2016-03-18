@@ -50,6 +50,18 @@ exports.initSchema = function (field, schema, Model) {
     type,
     ref
   };
+  [
+    'get',
+    'set',
+    'default',
+    'index',
+    'required',
+    'select'
+  ].forEach(function (key) {
+    if (field[key] !== undefined) {
+      options[key] = field[key];
+    }
+  });
 
   if (field.multi) {
     options = [options];
