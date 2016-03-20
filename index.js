@@ -6,10 +6,101 @@
 
 'use strict';
 
-const mongoose = require('mongoose');
 const alaska = require('alaska');
+const mongoose = require('mongoose');
+const TypeObjectId = mongoose.Schema.Types.ObjectId;
+const ObjectId = mongoose.Types.ObjectId;
 
-exports.views = {
+class RelationshipField extends alaska.Field {
+
+  /**
+   * 初始化Schema
+   */
+  initSchema() {
+    let schema = this._schema;
+    let model = this._model;
+    let type = TypeObjectId;
+    if (typeof this.ref === 'string') {
+      this.ref = model.service.model(this.ref);
+    }
+    let ref = this.ref;
+    if (ref.fields._id) {
+      type = ref.fields._id;
+      if (type.type) {
+        type = type.type;
+      }
+      if (type.plain) {
+        type = type.plain;
+      }
+    }
+
+    if (ref.registered) {
+      //引用已经注册的模型
+      this.service = this.ref.service.id;
+    } else {
+      //引用还未注册的模型
+      //只有与当前模型处在同一Service时才会发生
+      //所以,直接取当前模型Service
+      this.service = this._model.service.id;
+    }
+    this.model = ref.name;
+
+    let options = {
+      type,
+      ref: this.ref.name
+    };
+
+    [
+      'get',
+      'set',
+      'default',
+      'index',
+      'required',
+      'select'
+    ].forEach(key => {
+      if (this[key] !== undefined) {
+        options[key] = this[key];
+      }
+    });
+
+    if (this.multi) {
+      options = [options];
+    }
+    this.dataType = type;
+    schema.path(this.path, options);
+  }
+
+  createFilter(filter) {
+    let value = filter;
+    if (typeof filter === 'object' && filter.value) {
+      value = filter.value;
+    }
+
+    if (this.dataType === TypeObjectId) {
+      if (value instanceof ObjectId) {
+        return value;
+      }
+      if (ObjectId.isValid(value)) {
+        return new ObjectId(value);
+      }
+    } else if (this.dataType === String) {
+      if (typeof value !== 'string' && value.toString) {
+        value = value.toString();
+      }
+      if (typeof value === 'string') {
+        return value;
+      }
+    } else if (this.dataType === Number) {
+      value = parseInt(value);
+      if (isNaN(value)) {
+        return;
+      }
+      return value;
+    }
+  }
+}
+
+RelationshipField.views = {
   cell: {
     name: 'RelationshipFieldCell',
     field: __dirname + '/lib/cell.js'
@@ -20,69 +111,8 @@ exports.views = {
   }
 };
 
-exports.plain = mongoose.Schema.Types.ObjectId;
+RelationshipField.plain = TypeObjectId;
 
-/**
- * 初始化Schema
- * @param field   alaksa.Model中的字段配置
- * @param schema
- * @param Model
- */
-exports.initSchema = function (field, schema, Model) {
-  let type = mongoose.Schema.Types.ObjectId;
-  if (typeof field.ref == 'string') {
-    if (field.ref.indexOf('.') > -1) {
-      field.ref = Model.service.model(field.ref);
-    } else if (field.ref == Model.name) {
-      field.ref = Model;
-    }
-  }
-  if (typeof field.ref == 'function' && field.ref.fields._id) {
-    type = field.ref.fields._id.type.plain;
-  }
+RelationshipField.viewOptions = ['service', 'model', 'multi']
 
-  let ref = field.ref;
-  if (typeof ref === 'function') {
-    ref = ref.name;
-  }
-
-  let options = {
-    type,
-    ref
-  };
-  [
-    'get',
-    'set',
-    'default',
-    'index',
-    'required',
-    'select'
-  ].forEach(function (key) {
-    if (field[key] !== undefined) {
-      options[key] = field[key];
-    }
-  });
-
-  if (field.multi) {
-    options = [options];
-  }
-
-  schema.path(field.path, options);
-};
-
-/**
- * alaska-admin-view 前端控件初始化参数
- * @param field
- * @param Model
- */
-exports.viewOptions = function (field, Model) {
-  let options = alaska.Field.viewOptions.apply(this, arguments);
-  let ref = field.ref;
-  if (typeof ref == 'string') {
-    ref = Model.service.model(ref);
-  }
-  options.service = ref.service.id;
-  options.model = ref.name;
-  options.multi = field.multi;
-  return options;
-};
+module.exports = RelationshipField;

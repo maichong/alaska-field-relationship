@@ -114,7 +114,7 @@ class RelationshipFieldView extends React.Component {
   }
 
   render() {
-    let { field, value, model, disabled } = this.props;
+    let { field, value, model, disabled, errorText } = this.props;
     let { muiTheme } = this.state;
     let noteElement = field.note ?
       <div style={field.fullWidth?muiTheme.fieldNote:muiTheme.fieldNoteInline}>{field.note}</div> : null;
@@ -130,8 +130,13 @@ class RelationshipFieldView extends React.Component {
       select: {
         width: '100%',
         marginBottom: 5
+      },
+      error: {
+        color: muiTheme.textField.errorColor,
+        fontSize: 12
       }
     };
+    let errorLabel = errorText ? <div style={styles.error}>{errorText}</div> : null;
     return (
       <div style={styles.root}>
         <div style={styles.label}>{field.label}</div>
@@ -144,7 +149,10 @@ class RelationshipFieldView extends React.Component {
           labelKey="title"
           onChange={this.handleChange}
           loadOptions={this.handleSearch}
-        />{noteElement}</div>
+        />
+        {noteElement}
+        {errorLabel}
+      </div>
     );
   }
 }
