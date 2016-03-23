@@ -5,11 +5,8 @@
  */
 
 import React from 'react';
-import Select from 'react-select';
-import 'react-select/dist/react-select.min.css';
-
+import Select from 'alaska-field-select/lib/Select';
 import qs from 'qs';
-
 import { shallowEqual, api, PREFIX } from 'alaska-admin-view';
 
 export default class RelationshipFieldView extends React.Component {
@@ -28,11 +25,12 @@ export default class RelationshipFieldView extends React.Component {
       if (this.props.field.multi) {
         val = [];
         value && value.forEach(o => {
-          val.push(o._id)
+          val.push(o.value)
         });
       } else if (value) {
-        val = value._id;
+        val = value.value;
       }
+      this.setState({ value });
       this.props.onChange(val);
     }
   };
@@ -42,32 +40,35 @@ export default class RelationshipFieldView extends React.Component {
     let query = qs.stringify({
       service: field.service,
       model: field.model,
-      search: keyword
+      search: keyword,
+      filters: field.filters
     });
-    api.post(PREFIX + '/api/search?' + query).then(res => {
+    api.post(PREFIX + '/api/relation?' + query).then(res => {
       callback(null, { options: res.results });
     }, callback);
   };
 
   render() {
     let { field, value, disabled, errorText } = this.props;
-    let noteElement = field.note ? <p className="help-block">{field.note}</p> : null;
-    let errorLabel = errorText ? <p className="help-block text-danger">{errorText}</p> : null;
+    let help = field.help;
+    let className = 'form-group';
+    if (errorText) {
+      className += ' has-error';
+      help = errorText;
+    }
+    let helpElement = help ? <p className="help-block">{help}</p> : null;
     return (
-      <div className="form-group">
+      <div className={className}>
         <label className="control-label col-xs-2">{field.label}</label>
         <div className="col-xs-10">
-          <Select.Async
+          <Select
             multi={field.multi}
             value={value}
             disabled={disabled}
-            valueKey="_id"
-            labelKey="title"
             onChange={this.handleChange}
             loadOptions={this.handleSearch}
           />
-          {noteElement}
-          {errorLabel}
+          {helpElement}
         </div>
       </div>
     );

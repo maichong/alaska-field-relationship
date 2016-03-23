@@ -1,6 +1,6 @@
 {
   "name": "alaska-field-relationship",
-  "version": "0.4.0",
+  "version": "0.4.2",
   "description": "Alaska relationship field",
   "main": "index.js",
   "scripts": {
@@ -34,6 +34,6 @@
     "rimraf": "^2.5.2"
   },
   "dependencies": {
-    "react-select": "^1.0.0-beta11"
+    "alaska-field-select": "^0.4.1"
   }
 }
