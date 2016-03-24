@@ -63,7 +63,7 @@ export default class RelationshipFieldView extends React.Component {
         <div className="col-xs-10">
           <Select
             multi={field.multi}
-            value={value}
+            value={!value?'':value}
             disabled={disabled}
             onChange={this.handleChange}
             loadOptions={this.handleSearch}
