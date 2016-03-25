@@ -113,6 +113,10 @@ RelationshipField.views = {
 
 RelationshipField.plain = TypeObjectId;
 
-RelationshipField.viewOptions = ['filters', 'service', 'model', 'multi']
+RelationshipField.viewOptions = ['filters', 'service', 'model', 'multi', function (options, field) {
+  let Model = field.ref;
+  options.key = Model.key;
+  options.title = Model.title;
+}];
 
 module.exports = RelationshipField;
