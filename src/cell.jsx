@@ -6,95 +6,87 @@
 
 import React from 'react';
 
-import {bindActionCreators} from 'redux';
-import {connect} from 'react-redux';
-import {actions} from 'alaska-admin-view';
-import {Link} from 'react-router';
-class RelationshipFieldCell extends React.Component {
+import { bindActionCreators } from 'redux';
+import { connect } from 'react-redux';
+import { actions } from 'alaska-admin-view';
+import { Link } from 'react-router';
 
-  static contextTypes = {
-    settings: React.PropTypes.object
-  };
+import '../relationship.less';
+
+class RelationshipFieldCell extends React.Component {
 
   constructor(props, context) {
     super(props);
     this.state = {
-      settings: context.settings
+      display: ''
     };
-  }
-
-  componentDidMount() {
-    this.init();
-  }
-
-  componentWillReceiveProps(nextProps, nextContext) {
-    let newState = {};
-    if (nextContext.settings) {
-      newState.settings = nextContext.settings;
-    }
-    this.setState(newState, ()=> {
-      this.init();
-    });
-  }
-
-  init() {
-    let display = [];
-    if (Array.isArray(this.props.value)) {
-      for (let i = 0; i < this.props.value.length; i++) {
-        let el = this.getLink(this.props.value[i]);
-        if (el) {
-          display.push(el);
-        }
-      }
-    } else {
-      let el = this.getLink(this.props.value);
-      if (el) {
-        display.push(el);
-      }
-    }
-    this.setState({display});
-  }
-
-  getLink(value) {
-    let field = this.props.field;
-    let details = this.props.details;
-    if (
-      value && details && details[field.key] && details[field.key][value]) {
-      let el = (
-        <Link to={'/edit/' + field.service + '/' + field.model + '/' + details[field.key][value]._id}>
-          [{details[field.key][value][field.title]}]
-        </Link>);
-      return el;
-    } else {
-      this.actionDetails(value);
-      return false;
-    }
-  }
-
-  actionDetails(id) {
-    this.props.actions.details({
-      service: this.props.field.service,
-      model: this.props.field.model,
-      id
-    });
+    this._fetch = {};
   }
 
   shouldComponentUpdate(props, state) {
-    return props.value != this.props.value || props.details != this.props.details || state != this.state;
+    let field = this.props.field;
+    let key = field.key;
+    let details = this.props.details;
+    let value = props.value;
+    if (!value) {
+      return false;
+    }
+    if (value !== this.props.value) {
+      return true;
+    }
+    if (!props.details[key] || !details[key]) {
+      return true;
+    }
+    if (props.details[key][value] !== details[key][value]) {
+      return true;
+    }
+    return false;
+  }
+
+  componentWillUnmount() {
+    this._fetch = {};
+  }
+
+  getLink(value, index) {
+    let field = this.props.field;
+    let details = this.props.details;
+    let key = field.key;
+    let title = value;
+    if (value && details && details[key] && details[key][value]) {
+      title = details[key][value][field.title] || value;
+    } else {
+      if (!this._fetch[value]) {
+        setTimeout(()=> {
+          this.props.actions.details({
+            service: field.service,
+            model: field.model,
+            key,
+            id: value
+          });
+        }, 1);
+        this._fetch[value] = true;
+      }
+    }
+    return <Link key={index} to={'/edit/' + field.service + '/' + field.model + '/' +value}>{title}</Link>;
   }
 
   render() {
-    let props = this.props;
-    let state = this.state;
-    let styles = {
-      root: {}
-    };
+    let value = this.props.value;
+    if (!value) {
+      return <div></div>;
+    }
+    let display;
+    if (Array.isArray(value)) {
+      display = value.map((v, i)=>this.getLink(v, i));
+    } else {
+      display = this.getLink(value);
+    }
     return (
-      <div style={styles.root}>{state.display}</div>
+      <div className="relationship-field-cell">{display}</div>
     );
   }
 }
 
-export default connect(({details}) => ({details}), dispatch => ({
+export default connect(({details}) => ({ details }), dispatch => ({
   actions: bindActionCreators(actions, dispatch)
 }))(RelationshipFieldCell);
