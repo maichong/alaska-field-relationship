@@ -6,10 +6,10 @@
 
 import React from 'react';
 
-import { bindActionCreators } from 'redux';
-import { connect } from 'react-redux';
-import { actions } from 'alaska-admin-view';
-
+import {bindActionCreators} from 'redux';
+import {connect} from 'react-redux';
+import {actions} from 'alaska-admin-view';
+import {Link} from 'react-router';
 class RelationshipFieldCell extends React.Component {
 
   static contextTypes = {
@@ -23,19 +23,64 @@ class RelationshipFieldCell extends React.Component {
     };
   }
 
+  componentDidMount() {
+    this.init();
+  }
+
   componentWillReceiveProps(nextProps, nextContext) {
     let newState = {};
     if (nextContext.settings) {
       newState.settings = nextContext.settings;
     }
-    if (nextProps.details) {
-
-    }
-    this.setState(newState);
+    this.setState(newState, ()=> {
+      this.init();
+    });
   }
 
-  shouldComponentUpdate(props) {
-    return props.value != this.props.value || props.details != this.props.details;
+  init() {
+    let display = [];
+    if (Array.isArray(this.props.value)) {
+      for (let i = 0; i < this.props.value.length; i++) {
+        let el = this.getLink(this.props.value[i]);
+        if (el) {
+          display.push(el);
+        }
+      }
+    } else {
+      let el = this.getLink(this.props.value);
+      if (el) {
+        display.push(el);
+      }
+    }
+    this.setState({display});
+  }
+
+  getLink(value) {
+    let field = this.props.field;
+    let details = this.props.details;
+    if (
+      value && details && details[field.key] && details[field.key][value]) {
+      let el = (
+        <Link to={'/edit/' + field.service + '/' + field.model + '/' + details[field.key][value]._id}>
+          [{details[field.key][value][field.title]}]
+        </Link>);
+      return el;
+    } else {
+      this.actionDetails(value);
+      return false;
+    }
+  }
+
+  actionDetails(id) {
+    this.props.actions.details({
+      service: this.props.field.service,
+      model: this.props.field.model,
+      id
+    });
+  }
+
+  shouldComponentUpdate(props, state) {
+    return props.value != this.props.value || props.details != this.props.details || state != this.state;
   }
 
   render() {
@@ -45,11 +90,11 @@ class RelationshipFieldCell extends React.Component {
       root: {}
     };
     return (
-      <div style={styles.root}>TODO</div>
+      <div style={styles.root}>{state.display}</div>
     );
   }
 }
 
-export default connect(({ details }) => ({ details }), dispatch => ({
+export default connect(({details}) => ({details}), dispatch => ({
   actions: bindActionCreators(actions, dispatch)
 }))(RelationshipFieldCell);
