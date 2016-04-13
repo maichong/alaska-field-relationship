@@ -80,6 +80,9 @@ class RelationshipField extends alaska.Field {
       'set',
       'default',
       'index',
+      'unique',
+      'text',
+      'sparse',
       'required',
       'select'
     ].forEach(key => {
