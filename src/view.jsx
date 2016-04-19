@@ -21,7 +21,7 @@ export default class RelationshipFieldView extends React.Component {
 
   handleChange = (value) => {
     if (this.props.onChange) {
-      let val = '';
+      let val = null;
       if (this.props.field.multi) {
         val = [];
         value && value.forEach(o => {
