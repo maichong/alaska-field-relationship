@@ -57,7 +57,7 @@ class RelationshipFieldCell extends React.Component {
     } else {
       if (!this._fetch[value]) {
         setTimeout(()=> {
-          this.props.actions.details({
+          this.props.actions.detailsIfNeed({
             service: field.service,
             model: field.model,
             key,

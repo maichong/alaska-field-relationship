@@ -8,15 +8,29 @@ import React from 'react';
 import Select from 'alaska-field-select/lib/Select';
 import qs from 'qs';
 import { shallowEqual, api, PREFIX } from 'alaska-admin-view';
+import _find from 'lodash/find';
 
 export default class RelationshipFieldView extends React.Component {
 
   static propTypes = {
-    children: React.PropTypes.node
+    model: React.PropTypes.object,
+    field: React.PropTypes.object,
+    data: React.PropTypes.object,
+    errorText: React.PropTypes.string,
+    disabled: React.PropTypes.bool,
+    value: React.PropTypes.any,
+    onChange: React.PropTypes.func,
   };
 
-  shouldComponentUpdate(props) {
-    return !shallowEqual(props, this.props, 'data', 'onChange', 'search');
+  constructor(props) {
+    super(props);
+    this.state = {
+      options: null
+    };
+  }
+
+  shouldComponentUpdate(props, state) {
+    return !shallowEqual(props, this.props, 'data', 'onChange', 'search') || this.state.options !== state.options;
   }
 
   handleChange = (value) => {
@@ -24,9 +38,7 @@ export default class RelationshipFieldView extends React.Component {
       let val = null;
       if (this.props.field.multi) {
         val = [];
-        value && value.forEach(o => {
-          val.push(o.value)
-        });
+        if (value) value.forEach(o => val.push(o.value));
       } else if (value) {
         val = value.value;
       }
@@ -41,7 +53,8 @@ export default class RelationshipFieldView extends React.Component {
       service: field.service,
       model: field.model,
       search: keyword,
-      filters: field.filters
+      filters: field.filters,
+      value: this.props.value
     });
     api.post(PREFIX + '/api/relation?' + query).then(res => {
       callback(null, { options: res.results });
@@ -57,17 +70,55 @@ export default class RelationshipFieldView extends React.Component {
       help = errorText;
     }
     let helpElement = help ? <p className="help-block">{help}</p> : null;
+
+    let inputElement;
+    if (field.static) {
+      let options = this.state.options;
+      let option;
+      if (!options) {
+        this.handleSearch('', (error, res) => {
+          if (res) {
+            this.setState(res);
+          }
+        });
+      } else {
+        option = _find(options, o => o.value === value);
+      }
+      inputElement =
+        <p className="form-control-static"><a href={`#/edit/${field.service}/${field.model}/${value}`}>{option ? option.label : value}</a></p>;
+    } else {
+      inputElement = (
+        <Select
+          multi={field.multi}
+          value={value || ''}
+          disabled={disabled}
+          onChange={this.handleChange}
+          loadOptions={this.handleSearch}
+        />
+      );
+    }
+
+
+    let label = field.nolabel ? '' : field.label;
+
+    if (field.fullWidth) {
+      let labelElement = label ? (
+        <label className="control-label">{label}</label>
+      ) : null;
+      return (
+        <div className={className}>
+          {labelElement}
+          {inputElement}
+          {helpElement}
+        </div>
+      );
+    }
+
     return (
       <div className={className}>
-        <label className="control-label col-xs-2">{field.label}</label>
-        <div className="col-xs-10">
-          <Select
-            multi={field.multi}
-            value={!value?'':value}
-            disabled={disabled}
-            onChange={this.handleChange}
-            loadOptions={this.handleSearch}
-          />
+        <label className="col-sm-2 control-label">{label}</label>
+        <div className="col-sm-10">
+          {inputElement}
           {helpElement}
         </div>
       </div>
