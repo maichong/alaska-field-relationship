@@ -85,7 +85,8 @@ export default class RelationshipFieldView extends React.Component {
         option = _find(options, o => o.value === value);
       }
       inputElement =
-        <p className="form-control-static"><a href={`#/edit/${field.service}/${field.model}/${value}`}>{option ? option.label : value}</a></p>;
+        <p className="form-control-static"><a
+          href={`#/edit/${field.service}/${field.model}/${value}`}>{option ? option.label : value}</a></p>;
     } else {
       inputElement = (
         <Select
@@ -101,7 +102,7 @@ export default class RelationshipFieldView extends React.Component {
 
     let label = field.nolabel ? '' : field.label;
 
-    if (field.fullWidth) {
+    if (field.horizontal === false) {
       let labelElement = label ? (
         <label className="control-label">{label}</label>
       ) : null;
