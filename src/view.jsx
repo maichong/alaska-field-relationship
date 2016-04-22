@@ -74,7 +74,7 @@ export default class RelationshipFieldView extends React.Component {
     let inputElement;
     if (field.static) {
       let options = this.state.options;
-      let option;
+      let opts = [];
       if (!options) {
         this.handleSearch('', (error, res) => {
           if (res) {
@@ -82,11 +82,21 @@ export default class RelationshipFieldView extends React.Component {
           }
         });
       } else {
-        option = _find(options, o => o.value === value);
+        if (typeof value === 'string') {
+          value = [value];
+        }
+        value.forEach(v => {
+          let opt = _find(options, o => o.value === v);
+          opts.push(opt ? opt : { value: v, label: v });
+        });
       }
-      inputElement =
-        <p className="form-control-static"><a
-          href={`#/edit/${field.service}/${field.model}/${value}`}>{option ? option.label : value}</a></p>;
+
+      inputElement = (<p className="form-control-static">{opts.map(opt => <a
+        key={opt.value}
+        href={`#/edit/${field.service}/${field.model}/${opt.value}`}
+        style={{paddingRight:10}}
+      >{opt.label}</a>)}
+      </p>);
     } else {
       inputElement = (
         <Select
@@ -98,7 +108,6 @@ export default class RelationshipFieldView extends React.Component {
         />
       );
     }
-
 
     let label = field.nolabel ? '' : field.label;
 

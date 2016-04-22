@@ -37,8 +37,17 @@ class RelationshipFieldCell extends React.Component {
     if (!props.details[key] || !details[key]) {
       return true;
     }
-    if (props.details[key][value] !== details[key][value]) {
-      return true;
+    if (typeof value === 'string') {
+      if (props.details[key][value] !== details[key][value]) {
+        return true;
+      }
+    } else {
+      for (let i in value) {
+        let id = value[i];
+        if (props.details[key][id] !== details[key][id]) {
+          return true;
+        }
+      }
     }
     return false;
   }

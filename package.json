@@ -1,6 +1,6 @@
 {
   "name": "alaska-field-relationship",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "description": "Alaska relationship field",
   "main": "index.js",
   "scripts": {
