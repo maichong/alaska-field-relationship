@@ -29,6 +29,13 @@ export default class RelationshipFieldView extends React.Component {
     };
   }
 
+  componentWillReceiveProps(props, state) {
+    if (props.value !== this.props.value) {
+      if (state.options && _find(state.options, o => o.value === props.value)) return;
+      this.setState({ options: null });
+    }
+  }
+
   shouldComponentUpdate(props, state) {
     return !shallowEqual(props, this.props, 'data', 'onChange', 'search') || this.state.options !== state.options;
   }

@@ -65,7 +65,7 @@ class RelationshipFieldCell extends React.Component {
       title = details[key][value][field.title] || value;
     } else {
       if (!this._fetch[value]) {
-        setTimeout(()=> {
+        setTimeout(() => {
           this.props.actions.detailsIfNeed({
             service: field.service,
             model: field.model,
@@ -86,7 +86,7 @@ class RelationshipFieldCell extends React.Component {
     }
     let display;
     if (Array.isArray(value)) {
-      display = value.map((v, i)=>this.getLink(v, i));
+      display = value.map((v, i) => this.getLink(v, i));
     } else {
       display = this.getLink(value);
     }

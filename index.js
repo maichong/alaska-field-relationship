@@ -101,30 +101,30 @@ class RelationshipField extends alaska.Field {
 
   createFilter(filter) {
     let value = filter;
+    let inverse = false;
     if (typeof filter === 'object' && filter.value) {
       value = filter.value;
+      if (filter.inverse === true || filter.inverse === 'true') {
+        inverse = true;
+      }
     }
 
     if (this.dataType === TypeObjectId) {
       if (value instanceof ObjectId) {
         return value;
       }
-      if (ObjectId.isValid(value)) {
-        return new ObjectId(value);
-      }
+      return inverse ? { $ne: value } : value;
     } else if (this.dataType === String) {
       if (typeof value !== 'string' && value.toString) {
         value = value.toString();
       }
       if (typeof value === 'string') {
-        return value;
+        return inverse ? { $ne: value } : value;
       }
     } else if (this.dataType === Number) {
       value = parseInt(value);
-      if (isNaN(value)) {
-        return;
-      }
-      return value;
+      if (isNaN(value)) return;
+      return inverse ? { $ne: value } : value;
     }
   }
 }
@@ -137,6 +137,10 @@ RelationshipField.views = {
   view: {
     name: 'RelationshipFieldView',
     field: __dirname + '/lib/view.js'
+  },
+  filter: {
+    name: 'RelationshipFieldFilter',
+    field: __dirname + '/lib/filter.js'
   }
 };
 
