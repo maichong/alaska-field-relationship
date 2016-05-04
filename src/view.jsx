@@ -9,6 +9,7 @@ import Select from 'alaska-field-select/lib/Select';
 import qs from 'qs';
 import { shallowEqual, api, PREFIX } from 'alaska-admin-view';
 import _find from 'lodash/find';
+import _forEach from 'lodash/forEach';
 
 export default class RelationshipFieldView extends React.Component {
 
@@ -45,7 +46,7 @@ export default class RelationshipFieldView extends React.Component {
       let val = null;
       if (this.props.field.multi) {
         val = [];
-        if (value) value.forEach(o => val.push(o.value));
+        if (value) _forEach(value, o => val.push(o.value));
       } else if (value) {
         val = value.value;
       }
@@ -92,7 +93,7 @@ export default class RelationshipFieldView extends React.Component {
         if (typeof value === 'string') {
           value = [value];
         }
-        value.forEach(v => {
+        _forEach(value, v => {
           let opt = _find(options, o => o.value === v);
           opts.push(opt ? opt : { value: v, label: v });
         });
