@@ -53,15 +53,7 @@ class RelationshipField extends alaska.Field {
         ref: ref.name
       };
 
-      if (ref.registered) {
-        //引用已经注册的模型
-        this.service = ref.service.id;
-      } else {
-        //引用还未注册的模型
-        //只有与当前模型处在同一Service时才会发生
-        //所以,直接取当前模型Service
-        this.service = this._model.service.id;
-      }
+      this.service = ref.service.id;
       this.model = ref.name;
     } else {
       //如果没有找到引用,说明是可选引用
