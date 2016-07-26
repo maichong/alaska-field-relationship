@@ -41,6 +41,9 @@ class RelationshipField extends alaska.Field {
         if (type.type) {
           type = type.type;
         }
+        if (typeof type === 'string') {
+          type = require('alaska-field-' + type);
+        }
         if (type.plain) {
           type = type.plain;
         }
@@ -124,15 +127,15 @@ class RelationshipField extends alaska.Field {
 RelationshipField.views = {
   cell: {
     name: 'RelationshipFieldCell',
-    field: __dirname + '/lib/cell.js'
+    path: __dirname + '/lib/cell.js'
   },
   view: {
     name: 'RelationshipFieldView',
-    field: __dirname + '/lib/view.js'
+    path: __dirname + '/lib/view.js'
   },
   filter: {
     name: 'RelationshipFieldFilter',
-    field: __dirname + '/lib/filter.js'
+    path: __dirname + '/lib/filter.js'
   }
 };
 
