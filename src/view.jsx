@@ -6,21 +6,30 @@
 
 import React from 'react';
 import Select from 'alaska-field-select/lib/Select';
+import Switch from 'alaska-field-select/lib/Switch';
+import Checkbox from 'alaska-field-select/lib/Checkbox';
 import qs from 'qs';
 import { shallowEqual, api, PREFIX } from 'alaska-admin-view';
 import _find from 'lodash/find';
 import _forEach from 'lodash/forEach';
 
+function getOptionValue(opt) {
+  if (opt && typeof opt === 'object') return opt.value;
+  return opt;
+}
+
+const { bool, object, any, func, string } = React.PropTypes;
+
 export default class RelationshipFieldView extends React.Component {
 
   static propTypes = {
-    model: React.PropTypes.object,
-    field: React.PropTypes.object,
-    data: React.PropTypes.object,
-    errorText: React.PropTypes.string,
-    disabled: React.PropTypes.bool,
-    value: React.PropTypes.any,
-    onChange: React.PropTypes.func,
+    model: object,
+    field: object,
+    data: object,
+    errorText: string,
+    disabled: bool,
+    value: any,
+    onChange: func,
   };
 
   constructor(props) {
@@ -46,9 +55,9 @@ export default class RelationshipFieldView extends React.Component {
       let val = null;
       if (this.props.field.multi) {
         val = [];
-        if (value) _forEach(value, o => val.push(o.value));
+        if (value) _forEach(value, o => val.push(getOptionValue(o)));
       } else if (value) {
-        val = value.value;
+        val = getOptionValue(value);
       }
       this.setState({ value });
       this.props.onChange(val);
@@ -72,7 +81,13 @@ export default class RelationshipFieldView extends React.Component {
   render() {
     let { field, value, disabled, errorText } = this.props;
     let help = field.help;
-    let className = 'form-group';
+    let View = Select;
+    if (field.checkbox) {
+      View = Checkbox;
+    } else if (field.switch) {
+      View = Switch;
+    }
+    let className = 'form-group relationship-field';
     if (errorText) {
       className += ' has-error';
       help = errorText;
@@ -107,7 +122,7 @@ export default class RelationshipFieldView extends React.Component {
       </p>);
     } else {
       inputElement = (
-        <Select
+        <View
           multi={field.multi}
           value={value || ''}
           disabled={disabled}

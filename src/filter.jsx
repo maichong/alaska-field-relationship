@@ -9,17 +9,19 @@ import Select from 'alaska-field-select/lib/Select';
 import { api, PREFIX } from 'alaska-admin-view';
 import qs from 'qs';
 
+const { object, any, func } = React.PropTypes;
+
 export default class RelationshipFieldFilter extends React.Component {
 
   static propTypes = {
-    value: React.PropTypes.any,
-    field: React.PropTypes.object,
-    onChange: React.PropTypes.func,
-    onClose: React.PropTypes.func,
+    value: any,
+    field: object,
+    onChange: func,
+    onClose: func,
   };
 
   static contextTypes = {
-    t: React.PropTypes.func,
+    t: func,
   };
 
   constructor(props) {
@@ -31,7 +33,7 @@ export default class RelationshipFieldFilter extends React.Component {
     this.state = {
       value: value.value,
       inverse: value.inverse,
-      error: false,
+      error: value.value === undefined,
       options: null
     };
   }
@@ -84,12 +86,12 @@ export default class RelationshipFieldFilter extends React.Component {
     const { field, onClose } = this.props;
     const { value, inverse, error, options } = this.state;
     const buttonClassName = 'btn btn-default';
-    const buttonClassNameActive = buttonClassName + ' active';
-    let className = 'row field-filter field-filter-number' + (error ? ' error' : '');
+    const buttonClassNameActive = buttonClassName + ' btn-success';
+    let className = 'row field-filter relationship-field-filter' + (error ? ' error' : '');
     return (
       <div className={className}>
         <label className="col-xs-2 control-label text-right">{field.label}</label>
-        <form className="form-inline col-xs-10">
+        <div className="form-inline col-xs-10">
           <div className="form-group" style={{ minWidth: 230 }}>
             <Select
               options={options}
@@ -102,7 +104,7 @@ export default class RelationshipFieldFilter extends React.Component {
             className={inverse ? buttonClassNameActive : buttonClassName}
             onClick={this.handleInverse}>{t('inverse')}
           </a>
-        </form>
+        </div>
         <a className="btn field-filter-close" onClick={onClose}><i className="fa fa-close"/></a>
       </div>
     );

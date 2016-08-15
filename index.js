@@ -141,7 +141,7 @@ RelationshipField.views = {
 
 RelationshipField.plain = TypeObjectId;
 
-RelationshipField.viewOptions = ['filters', 'service', 'model', 'multi', function (options, field) {
+RelationshipField.viewOptions = ['filters', 'service', 'model', 'multi', 'checkbox', 'switch', function (options, field) {
   let Model = field.ref;
   if (Model) {
     options.key = Model.key;
