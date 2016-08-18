@@ -63,6 +63,7 @@ class RelationshipFieldCell extends React.Component {
     let title = value;
     if (value && details && details[key] && details[key][value]) {
       title = details[key][value][field.title] || value;
+      delete this._fetch[value];
     } else {
       if (!this._fetch[value]) {
         setTimeout(() => {

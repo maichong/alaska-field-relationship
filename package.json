@@ -1,6 +1,6 @@
 {
   "name": "alaska-field-relationship",
-  "version": "0.10.1",
+  "version": "0.10.2",
   "description": "Alaska relationship field",
   "keywords": [
     "alaska",
@@ -31,6 +31,6 @@
     "alaska": "*"
   },
   "dependencies": {
-    "alaska-field-select": "^0.10.2"
+    "alaska-field-select": "^0.10.3"
   }
 }
